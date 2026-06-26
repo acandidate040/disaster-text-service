@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Disaster Text Classifier</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0NSIgZmlsbD0iI2ZmZDI1NiIvPjx0ZXh0IHg9IjUwIiB5PSI2NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZvbnQtc2l6ZT0iMzgiIGZpbGw9IiMwMDMzOTkiPkFJPC90ZXh0Pjwvc3ZnPg==" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-blue: #0092d1;
+      --brand-navy: #003399;
+      --brand-light-blue: #6cc1dc;
+      --brand-gold: #ffd256;
+      --brand-dark: #1a1a2e;
+      --brand-gray: #5a5a6e;
+      --brand-light-gray: #f5f7fa;
+      --brand-border: #d0d7de;
+      --brand-white: #ffffff;
+      --success: #2e7d32;
+      --warning: #c62828;
+      --warn-bg: #fff3f3;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--brand-light-gray);
+      color: var(--brand-dark);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Header bar */
+    .header {
+      background: var(--brand-navy);
+      padding: 0;
+      border-bottom: 4px solid var(--brand-gold);
+    }
+
+    .header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo {
+      width: 36px;
+      height: 36px;
+      background: var(--brand-gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--brand-navy);
+      font-size: 14px;
+    }
+
+    .header-title {
+      color: var(--brand-white);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .header-subtitle {
+      color: var(--brand-light-blue);
+      font-size: 12px;
+      font-weight: 400;
+      margin-left: auto;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Main content */
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+
+    /* Hero / intro card */
+    .hero {
+      background: var(--brand-white);
+      border-radius: 8px;
+      padding: 32px;
+      margin-bottom: 24px;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .hero h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--brand-navy);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .hero p {
+      color: var(--brand-gray);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 16px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .meta-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--brand-light-gray);
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--brand-gray);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .meta-chip .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    /* Card */
+    .card {
+      background: var(--brand-white);
+      border-radius: 8px;
+      padding: 32px;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--brand-navy);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--brand-blue);
+      display: inline-block;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--brand-dark);
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      resize: vertical;
+      padding: 16px;
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--brand-dark);
+      background: var(--brand-white);
+      border: 1px solid var(--brand-border);
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--brand-blue);
+      box-shadow: 0 0 0 3px rgba(0,146,209,0.12);
+    }
+
+    textarea::placeholder {
+      color: #a0a8b0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 4px;
+      padding: 12px 24px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    .primary {
+      background: var(--brand-blue);
+      color: var(--brand-white);
+    }
+
+    .primary:hover:not(:disabled) {
+      background: #007bb3;
+    }
+
+    .secondary {
+      background: var(--brand-white);
+      color: var(--brand-navy);
+      border: 1px solid var(--brand-border);
+    }
+
+    .secondary:hover:not(:disabled) {
+      background: var(--brand-light-gray);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status {
+      font-size: 13px;
+      color: var(--brand-gray);
+      font-weight: 600;
+    }
+
+    /* Result panel */
+    .result {
+      margin-top: 24px;
+      padding: 24px;
+      border-radius: 6px;
+      border: 1px solid var(--brand-border);
+      background: var(--brand-light-gray);
+      display: none;
+    }
+
+    .result.show {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--brand-border);
+    }
+
+    .result-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .result-icon.disaster {
+      background: #ffebee;
+      color: var(--warning);
+    }
+
+    .result-icon.not-disaster {
+      background: #e8f5e9;
+      color: var(--success);
+    }
+
+    .result-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--brand-navy);
+    }
+
+    .result-subtitle {
+      font-size: 13px;
+      color: var(--brand-gray);
+    }
+
+    .confidence-bar {
+      height: 8px;
+      background: var(--brand-border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 12px 0 8px;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+
+    .confidence-label {
+      font-size: 13px;
+      color: var(--brand-gray);
+      font-weight: 600;
+    }
+
+    .raw-data {
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: var(--brand-white);
+      border-radius: 4px;
+      font-family: "SF Mono", "Consolas", monospace;
+      font-size: 12px;
+      color: var(--brand-gray);
+      border: 1px solid var(--brand-border);
+    }
+
+    /* Error */
+    .error {
+      display: none;
+      margin-top: 20px;
+      padding: 14px 18px;
+      border-radius: 6px;
+      background: var(--warn-bg);
+      color: var(--warning);
+      border: 1px solid #ffcdd2;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .error.show {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* Note / disclaimer */
+    .note {
+      margin-top: 24px;
+      padding: 20px;
+      background: var(--brand-light-gray);
+      border-radius: 6px;
+      border-left: 4px solid var(--brand-gold);
+    }
+
+    .note-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brand-navy);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .note p {
+      font-size: 13px;
+      color: var(--brand-gray);
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    /* Tab navigation */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--brand-border);
+    }
+
+    .tab {
+      padding: 12px 20px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--brand-gray);
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+      letter-spacing: 0.02em;
+    }
+
+    .tab.active {
+      color: var(--brand-navy);
+      border-bottom-color: var(--brand-blue);
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--brand-dark);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* API docs styling */
+    .endpoint {
+      margin-bottom: 24px;
+      padding: 20px;
+      background: var(--brand-light-gray);
+      border-radius: 6px;
+      border: 1px solid var(--brand-border);
+    }
+
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .method {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .method.get {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .method.post {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .endpoint-path {
+      font-family: "SF Mono", "Consolas", monospace;
+      font-size: 13px;
+      color: var(--brand-navy);
+      font-weight: 600;
+    }
+
+    .endpoint-desc {
+      font-size: 13px;
+      color: var(--brand-gray);
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+
+    .code-block {
+      background: var(--brand-white);
+      border: 1px solid var(--brand-border);
+      border-radius: 4px;
+      padding: 14px 16px;
+      font-family: "SF Mono", "Consolas", monospace;
+      font-size: 12px;
+      color: var(--brand-dark);
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    .code-block .comment {
+      color: #8a9199;
+    }
+
+    .url-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .url-list li {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--brand-border);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .url-list li:last-child {
+      border-bottom: none;
+    }
+
+    .url-label {
+      font-weight: 600;
+      color: var(--brand-navy);
+    }
+
+    .url-value {
+      font-family: "SF Mono", "Consolas", monospace;
+      font-size: 12px;
+      color: var(--brand-gray);
+    }
+
+    /* Footer */
+    .footer {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px 40px;
+      text-align: center;
+    }
+
+    .footer-line {
+      height: 1px;
+      background: var(--brand-border);
+      margin-bottom: 20px;
+    }
+
+    .footer-text {
+      font-size: 12px;
+      color: #8a9199;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      main { padding: 24px 16px 40px; }
+      .hero, .card { padding: 24px; }
+      .hero h1 { font-size: 22px; }
+      .header-subtitle { display: none; }
+      .tab { padding: 10px 14px; font-size: 13px; }
+      .url-list li { flex-direction: column; align-items: flex-start; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-logo">AI</div>
+      <div class="header-title">Disaster Text Classifier</div>
+      <div class="header-subtitle">AI for Humanitarian Response</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Disaster Text Classifier</h1>
+      <p>
+        A lightweight machine learning tool that estimates whether a short text or tweet describes a real-world disaster event. Built for rapid deployment in humanitarian and development contexts.
+      </p>
+      <div class="hero-meta">
+        <span class="meta-chip"><span class="dot"></span> Service Online</span>
+        <span class="meta-chip">Cloud Run</span>
+        <span class="meta-chip">p95 &lt; 2s</span>
+      </div>
+    </section>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="classifier">Classifier</button>
+      <button class="tab" data-tab="docs">API Documentation</button>
+    </div>
+
+    <!-- Classifier Panel -->
+    <div id="panel-classifier" class="tab-panel active">
+      <section class="card">
+        <div class="card-title">Input Text</div>
+
+        <label for="textInput">Enter text to classify</label>
+        <textarea id="textInput" placeholder="Example: Forest fire near La Ronge Sask. Canada"></textarea>
+
+        <div class="actions">
+          <button id="predictButton" class="primary">Run Prediction</button>
+          <button id="sampleButton" class="secondary" type="button">Load sample</button>
+          <span id="statusText" class="status"></span>
+        </div>
+
+        <div id="errorBox" class="error"></div>
+
+        <div id="resultBox" class="result">
+          <div class="result-header">
+            <div id="resultIcon" class="result-icon"></div>
+            <div>
+              <div id="resultTitle" class="result-title"></div>
+              <div class="result-subtitle">Model prediction result</div>
+            </div>
+          </div>
+          <div class="confidence-label">Confidence for disaster class</div>
+          <div class="confidence-bar">
+            <div id="confidenceFill" class="confidence-fill"></div>
+          </div>
+          <div id="confidenceText" class="confidence-label" style="text-align:right; margin-top:4px;"></div>
+          <div id="rawText" class="raw-data"></div>
+        </div>
+
+        <div class="note">
+          <div class="note-title">Limitations</div>
+          <p>
+            This classifier is trained on short English disaster-related text and may be unreliable on sarcasm, ambiguous language, uncommon events, multilingual input, or rapidly evolving real-world situations. The confidence score is a model estimate, not verified situational awareness.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <!-- API Documentation Panel -->
+    <div id="panel-docs" class="tab-panel">
+      <section class="card">
+        <div class="card-title">Live URLs</div>
+        <ul class="url-list">
+          <li><span class="url-label">Public UI</span><span class="url-value">https://disaster-text-service-19133435506.us-east1.run.app/</span></li>
+          <li><span class="url-label">GitHub Repo</span><span class="url-value">https://github.com/acandidate040/disaster-text-service</span></li>
+          <li><span class="url-label">API /predict</span><span class="url-value">/predict</span></li>
+          <li><span class="url-label">API /health</span><span class="url-value">/health</span></li>
+          <li><span class="url-label">API /stats</span><span class="url-value">/stats</span></li>
+          <li><span class="url-label">API /explain</span><span class="url-value">/explain</span></li>
+          <li><span class="url-label">API /predict_batch</span><span class="url-value">/predict_batch</span></li>
+          <li><span class="url-label">API /sample</span><span class="url-value">/sample</span></li>
+        </ul>
+      </section>
+
+      <section class="card" style="margin-top:24px;">
+        <div class="card-title">Model Insights</div>
+        <p style="font-size:13px; color:var(--brand-gray); margin-bottom:12px; line-height:1.6;">
+          Score distribution across 500 held-out tweets. The clear separation at the 0.50 threshold demonstrates robust discriminative power.
+        </p>
+        <img src="/static/score_histogram.png" alt="Score distribution histogram" style="width:100%; border-radius:6px; border:1px solid var(--brand-border);">
+        <div style="display:flex; gap:16px; margin-top:12px; flex-wrap:wrap;">
+          <span class="meta-chip">Disaster mean: 0.769</span>
+          <span class="meta-chip">Non-disaster mean: 0.214</span>
+          <span class="meta-chip">Threshold: 0.50</span>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top:24px;">
+        <div class="card-title">Endpoints</div>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/health</span>
+          </div>
+          <div class="endpoint-desc">Health-check endpoint. Returns 503 if the model is not loaded, otherwise 200.</div>
+          <div class="code-block">curl https://disaster-text-service-19133435506.us-east1.run.app/health</div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method post">POST</span>
+            <span class="endpoint-path">/predict</span>
+          </div>
+          <div class="endpoint-desc">Classify a single piece of text. Returns label (0 or 1) and score (0 to 1).</div>
+          <div class="code-block">curl -X POST /predict \\
+  -H "Content-Type: application/json" \\
+  -d '{"text":"Forest fire near La Ronge Sask. Canada"}'</div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method post">POST</span>
+            <span class="endpoint-path">/predict_batch</span>
+          </div>
+          <div class="endpoint-desc">Classify up to 100 texts in a single request. Returns an array of predictions.</div>
+          <div class="code-block">curl -X POST /predict_batch \\
+  -H "Content-Type: application/json" \\
+  -d '{"texts": ["fire", "pizza"]}'</div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/stats</span>
+          </div>
+          <div class="endpoint-desc">Service statistics: total predictions, average latency, model version, uptime.</div>
+          <div class="code-block">curl https://disaster-text-service-19133435506.us-east1.run.app/stats</div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method post">POST</span>
+            <span class="endpoint-path">/explain</span>
+          </div>
+          <div class="endpoint-desc">Model transparency. Returns the top positive and negative TF-IDF features that influenced the prediction.</div>
+          <div class="code-block">curl -X POST /explain \\
+  -H "Content-Type: application/json" \\
+  -d '{"text":"Forest fire near La Ronge", "top_n": 3}'</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-line"></div>
+    <p class="footer-text">Built for a Technical Assessment</p>
+    <p class="footer-text" style="margin-top:6px;">
+      <a href="https://github.com/acandidate040/disaster-text-service" target="_blank" rel="noopener" style="color:#8a9199; text-decoration:underline;">Source code</a>
+      &nbsp;&middot;&nbsp;
+      <a href="https://github.com/acandidate040/disaster-text-service/blob/master/Test%20Response.docx" target="_blank" rel="noopener" style="color:#8a9199; text-decoration:underline;">Submission document</a>
+    </p>
+  </footer>
+
+  <script>
+    const textInput = document.getElementById("textInput");
+    const predictButton = document.getElementById("predictButton");
+    const sampleButton = document.getElementById("sampleButton");
+    const statusText = document.getElementById("statusText");
+    const errorBox = document.getElementById("errorBox");
+    const resultBox = document.getElementById("resultBox");
+    const resultIcon = document.getElementById("resultIcon");
+    const resultTitle = document.getElementById("resultTitle");
+    const confidenceFill = document.getElementById("confidenceFill");
+    const confidenceText = document.getElementById("confidenceText");
+    const rawText = document.getElementById("rawText");
+
+    function setError(message) {
+      errorBox.textContent = message;
+      errorBox.classList.add("show");
+    }
+
+    function clearError() {
+      errorBox.textContent = "";
+      errorBox.classList.remove("show");
+    }
+
+    function clearResult() {
+      resultBox.classList.remove("show");
+      resultIcon.className = "result-icon";
+      resultIcon.textContent = "";
+      resultTitle.textContent = "";
+      confidenceFill.style.width = "0%";
+      confidenceFill.style.background = "transparent";
+      confidenceText.textContent = "";
+      rawText.textContent = "";
+    }
+
+    sampleButton.addEventListener("click", async () => {
+      clearError();
+      clearResult();
+      sampleButton.disabled = true;
+      statusText.textContent = "Loading sample...";
+      try {
+        const response = await fetch("/sample");
+        if (!response.ok) {
+          throw new Error(`API returned HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        textInput.value = data.text || "";
+      } catch (error) {
+        setError(`Failed to load sample: ${error.message}`);
+      } finally {
+        sampleButton.disabled = false;
+        statusText.textContent = "";
+      }
+    });
+
+    // Tab switching
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+      });
+    });
+
+    predictButton.addEventListener("click", async () => {
+      const text = textInput.value.trim();
+
+      clearError();
+      clearResult();
+
+      if (!text) {
+        setError("Please enter text before requesting a prediction.");
+        return;
+      }
+
+      predictButton.disabled = true;
+      sampleButton.disabled = true;
+      statusText.textContent = "Analyzing...";
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error(`API returned HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (typeof data.label !== "number" || typeof data.score !== "number") {
+          throw new Error("API response did not contain the expected label and score fields.");
+        }
+
+        const confidence = Math.round(data.score * 100);
+        const isDisaster = data.label === 1;
+
+        resultIcon.classList.add(isDisaster ? "disaster" : "not-disaster");
+        resultIcon.textContent = isDisaster ? "!" : "OK";
+        resultTitle.textContent = isDisaster
+          ? "Likely real disaster"
+          : "Likely not a real disaster";
+
+        confidenceFill.style.width = confidence + "%";
+        confidenceFill.style.background = isDisaster
+          ? "linear-gradient(90deg, #c62828, #ff6b6b)"
+          : "linear-gradient(90deg, #2e7d32, #66bb6a)";
+        confidenceText.textContent = confidence + "%";
+        rawText.textContent = `Raw: label=${data.label}, score=${data.score.toFixed(6)}`;
+        resultBox.classList.add("show");
+
+      } catch (error) {
+        if (error.name === "AbortError") {
+          setError("The request took too long. Please try again.");
+        } else {
+          setError(`Prediction failed: ${error.message}`);
+        }
+      } finally {
+        clearTimeout(timeoutId);
+        predictButton.disabled = false;
+        sampleButton.disabled = false;
+        statusText.textContent = "";
+      }
+    });
+  </script>
+</body>
+</html>

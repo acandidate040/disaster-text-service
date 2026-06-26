@@ -1,0 +1,14 @@
+# Python dependencies for the Disaster Text Classifier
+# FastAPI + uvicorn serve the API and static UI.
+# scikit-learn, pandas, numpy, joblib power the ML pipeline.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+scikit-learn==1.6.1
+pandas==2.2.3
+numpy==2.2.1
+joblib==1.4.2
+pydantic==2.10.4
+httpx==0.28.1  # required by FastAPI TestClient for integration tests
+requests==2.32.3  # required by latency test script
+matplotlib==3.11.0  # required by score histogram script
+pytest==8.3.5  # development dependency for running unit tests

@@ -1,0 +1,16 @@
+{
+  "model_type": "TF-IDF word+char n-grams with Logistic Regression",
+  "validation_f1_disaster_class": 0.7850038255547054,
+  "threshold": 0.5000000000000002,
+  "validation_split": "80/20 stratified, random_state=42",
+  "features": {
+    "word_ngrams": [
+      1,
+      2
+    ],
+    "char_wb_ngrams": [
+      3,
+      5
+    ]
+  }
+}
